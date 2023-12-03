@@ -10,15 +10,15 @@ def part1():
                 return i
             i += step
 
-    codes = []
+    code_sum = 0
+
     for line in lines:
         # O(n), n is length of line
         left = find_digit(line, 0, 1)  # k steps s.t k < n
         right = find_digit(line, len(line)-1, -1)  # max of n-k steps
+        code_sum += int(line[left] + line[right])
 
-        codes.append(int(line[left] + line[right]))
-
-    print(sum(codes))
+    print(code_sum)
 
 
 def part2():

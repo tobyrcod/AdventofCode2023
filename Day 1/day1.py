@@ -6,23 +6,21 @@ file.close()
 def part1():
     codes = []
     for line in lines:
-        # pointers
+        # Not the best, but can optimise in part2
         left = 0
-        right = len(line) - 1
-
-        # digits
-        first = last = None
-        while not (first and last):  # Assuming first and last digits always present
-            lc = line[left]
-            rc = line[right]
-
-            if not first and lc.isdigit():
-                first = lc
-
-            if not last and rc.isdigit():
-                last = rc
-
+        first = None
+        while not first and left < len(line):
+            char = line[left]
+            if char.isdigit():
+                first = char
             left += 1
+
+        right = len(line) - 1
+        last = None
+        while not last and right >= 0:
+            char = line[right]
+            if char.isdigit():
+                last = char
             right -= 1
 
         codes.append(int(first + last))
@@ -122,4 +120,4 @@ def part2():
         codes.append(int(code))
     print(sum(codes))
 
-part2()
+part1()

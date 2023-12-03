@@ -23,13 +23,21 @@ games = [line.split('; ') for line in lines]
 games = [np.array([prep_cubes(cubes) for cubes in game]) for game in games]
 
 games_max = [np.amax(game, axis=0) for game in games]
-max = np.array([12, 13, 14])
 
-impossible_games = np.any(games_max - max > 0, axis=1)
-impossible = impossible_games.nonzero()[0]
-impossible += 1
+def part1():
+    max = np.array([12, 13, 14])
 
-n = len(lines)
-games_sum = int(0.5 * n * (n + 1))
+    impossible_games = np.any(games_max - max > 0, axis=1)
+    impossible = impossible_games.nonzero()[0]
+    impossible += 1
 
-print(games_sum - sum(impossible))
+    n = len(lines)
+    games_sum = int(0.5 * n * (n + 1))
+
+    print(games_sum - sum(impossible))
+
+def part2():
+    powers = np.prod(games_max, axis=1)
+    print(sum(powers))
+
+part2()

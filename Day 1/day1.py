@@ -4,26 +4,19 @@ file.close()
 
 
 def part1():
+    def find_digit(word, i, step):
+        while 0 <= i < len(word):
+            if line[i].isdigit():
+                return i
+            i += step
+
     codes = []
     for line in lines:
-        # Not the best, but can optimise in part2
-        left = 0
-        first = None
-        while not first and left < len(line):
-            char = line[left]
-            if char.isdigit():
-                first = char
-            left += 1
+        # O(n), n is length of line
+        left = find_digit(line, 0, 1)  # k steps s.t k < n
+        right = find_digit(line, len(line)-1, -1)  # max of n-k steps
 
-        right = len(line) - 1
-        last = None
-        while not last and right >= 0:
-            char = line[right]
-            if char.isdigit():
-                last = char
-            right -= 1
-
-        codes.append(int(first + last))
+        codes.append(int(line[left] + line[right]))
 
     print(sum(codes))
 

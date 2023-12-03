@@ -78,51 +78,48 @@ def part2():
     # if we still have a valid path in the graph, we continue
     # if we run out of options, we start again with a new path
 
+    def find_digit_in_word(word, edges, word_modifier):
+        paths = []
+        word = word_modifier(word)
+
+        for char in word:
+            if char.isdigit():
+                return char
+
+            #
+            # We can either add the new char to the end of the current path
+            # Or make a new path starting with the new char
+            # Then whichever reaches a valid digit first wins
+
+            remove_paths = []
+            for i in range(len(paths)):
+                valid_moves = edges[paths[i]]
+                if char in valid_moves:
+                    paths[i] += char
+                else:
+                    remove_paths.append(paths[i])
+
+                # if the path grows enough to not have any more valid moves i.e complete digit
+                if paths[i] not in edges:
+                    digit_word = word_modifier(paths[i])
+                    digit_char = str(digit_words.inverse[digit_word])
+                    return digit_char
+
+            for path in remove_paths:
+                paths.remove(path)
+
+            if char in edges.keys():
+                paths.append(char)
+
     codes = []
     for line in lines:
         code = ''
 
-        for word, edges, f in [(line, forward_edges, None), (line[::-1], backward_edges, lambda s: s[::-1])]:
-            paths = []
-            i = 0
-            found = False
-            while not found and i < len(word):
-                newchar = word[i]
-                if newchar.isdigit():
-                    code += newchar
-                    found = True
-                    break
-
-                #
-                # We can either add the new char to the end of the current path
-                # Or make a new path starting with the new char
-                # Then whichever reaches a valid digit first wins
-
-                remove_paths = []
-                for j in range(len(paths)):
-                    valid_moves = edges[paths[j]]
-                    if newchar in valid_moves:
-                        paths[j] += newchar
-                    else:
-                        remove_paths.append(paths[j])
-
-                    if paths[j] not in edges:
-                        digit_word = paths[j] if not f else f(paths[j])
-                        digit_char = str(digit_words.inverse[digit_word])
-                        code += digit_char
-                        found = True
-                        break
-
-                if newchar in edges.keys():
-                    paths.append(newchar)
-
-                for path in remove_paths:
-                    paths.remove(path)
-
-                i += 1
+        for word, edges, f in [(line, forward_edges, lambda s: s), (line, backward_edges, lambda s: s[::-1])]:
+            digit = find_digit_in_word(word, edges, f)
+            code += digit
 
         codes.append(int(code))
     print(sum(codes))
-
 
 part2()

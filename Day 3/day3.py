@@ -41,17 +41,37 @@ for y, line in enumerate(lines):
 
             # Have we found a symbol
             if char != '.':
-                symbols.add((y, x))
+                symbols.add((char, y, x))
 
-print(id_number)
+def part1():
+    # Now for each symbol, we find the set of ids in its neighbourhood
+    part_number_ids = set()
+    for char, y, x in symbols:
+        for neighbour in get_adjacent(y, x):
+            id = position_id.get(neighbour, -1)
+            if id != -1:
+                part_number_ids.add(id)
 
-# Now for each symbol, we find the set of ids in its neighbourhood
-part_number_ids = set()
-for symbol in symbols:
-    for pos in get_adjacent(*symbol):
-        id = position_id.get(pos, -1)
-        if id != -1:
-            part_number_ids.add(id)
+    part_numbers = [id_number[id] for id in part_number_ids]
+    print(sum(part_numbers))
 
-part_numbers = [id_number[id] for id in part_number_ids]
-print(sum(part_numbers))
+
+def part2():
+    # Now for each symbol, we find the set of ids in its neighbourhood
+    total_gear_ratio = 0
+    for char, y, x in symbols:
+        symbol_ids = set()
+        for neighbour in get_adjacent(y, x):
+            id = position_id.get(neighbour, -1)
+            if id != -1:
+                symbol_ids.add(id)
+
+        # Is this symbol a gear?
+        if char == '*' and len(symbol_ids) == 2:
+            # Calculate gear ratio
+            gear_ratio = np.prod([id_number[id] for id in symbol_ids])
+            total_gear_ratio += gear_ratio
+
+    print(total_gear_ratio)
+
+part2()

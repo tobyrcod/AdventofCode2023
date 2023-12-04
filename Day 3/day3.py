@@ -60,16 +60,16 @@ def part2():
     # Now for each symbol, we find the set of ids in its neighbourhood
     total_gear_ratio = 0
     for char, y, x in symbols:
-        symbol_ids = set()
+        number_ids = set()
         for neighbour in get_adjacent(y, x):
             id = position_id.get(neighbour, -1)
             if id != -1:
-                symbol_ids.add(id)
+                number_ids.add(id)
 
         # Is this symbol a gear?
-        if char == '*' and len(symbol_ids) == 2:
+        if char == '*' and len(number_ids) == 2:
             # Calculate gear ratio
-            gear_ratio = np.prod([id_number[id] for id in symbol_ids])
+            gear_ratio = np.prod([id_number[id] for id in number_ids])
             total_gear_ratio += gear_ratio
 
     print(total_gear_ratio)

@@ -11,7 +11,7 @@ lines = [list(g) for k, g in groupby(lines, key=bool) if k]
 
 [seeds] = lines[0]
 seeds = list(map(int, seeds[seeds.index(':') + 2:].split()))
-seeds = [seeds[i:i +2] for i in range(0, len(seeds), 2)]
+seeds = [seeds[i:i+2] for i in range(0, len(seeds), 2)]
 seeds = [(s, s+l-1) for [s, l] in seeds]
 
 def parse_xy_map(xy_map):

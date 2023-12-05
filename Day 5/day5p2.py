@@ -42,7 +42,7 @@ for map in maps:
                 remaining_seeds.append((r2, s2))
                 continue
             if s1 <= r1 <= r2 <= s2:
-                # All of the rule fits inside the seed
+                # All the rule fits inside the seed
                 remaining_seeds.append((s1, r1))
                 new_seeds.append((r1 + shift, r2 + shift))
                 remaining_seeds.append((r2, s2))
@@ -53,10 +53,11 @@ for map in maps:
                 new_seeds.append((r1 + shift, s2 + shift))
                 continue
             if r1 <= s1 <= s2 <= r2:
-                # All of the seeds fit inside the rule
+                # All the seeds fit inside the rule
                 new_seeds.append((s1 + shift, s2 + shift))
                 continue
-            print('error', s1, s2, r1, r2)
+            # One of these cases should always be true
+            raise Exception(f"AABB logic is incorrect for seeds: {s1, s2}, rule: {r1, r2}")
         # The next rule only needs to check over the seeds that no other rule has already mapped
         seeds = remaining_seeds
     # any rules that are unmapped remain the same

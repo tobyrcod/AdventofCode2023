@@ -3,7 +3,7 @@ from itertools import groupby
 
 # https://www.reddit.com/r/adventofcode/s/lFc3UljtHJ
 
-file = open("input.txt")
+file = open("test1.txt")
 lines = file.read().splitlines()
 file.close()
 
@@ -28,33 +28,31 @@ for map in maps:
         # remaining seeds are new ranges that got missed by a rule
         remaining_seeds = list()
         for s1, s2 in seeds:
-            if r2 < s1:
-                # The seeds are above the rule range
+            if r2 < s1 or s2 < r1:
+                # There is no overlap between seeds and rule
                 remaining_seeds.append((s1, s2))
                 continue
-            if s2 < r1:
-                # The seeds are below the rule range
-                remaining_seeds.append((s1, s2))
-                continue
-            if r1 <= s1 <= r2 <= s2:
+            if r1 < s1 <= r2 < s2:
                 # The end of the rules overlaps with the start of the seeds
                 new_seeds.append((s1 + shift, r2 + shift))
-                remaining_seeds.append((r2, s2))
+                remaining_seeds.append((r2 + 1, s2))
                 continue
-            if s1 <= r1 <= r2 <= s2:
-                # All the rule fits inside the seed
-                remaining_seeds.append((s1, r1))
-                new_seeds.append((r1 + shift, r2 + shift))
-                remaining_seeds.append((r2, s2))
-                continue
-            if s1 <= r1 <= s2 <= r2:
+            if s1 < r1 <= s2 < r2:
                 # The start of the rules overlaps with the end of the seeds
-                remaining_seeds.append((s1, r1))
+                remaining_seeds.append((s1, r1 - 1))
                 new_seeds.append((r1 + shift, s2 + shift))
                 continue
             if r1 <= s1 <= s2 <= r2:
                 # All the seeds fit inside the rule
                 new_seeds.append((s1 + shift, s2 + shift))
+                continue
+            if s1 <= r1 <= r2 <= s2:
+                # All the rule fits inside the seed
+                if s1 != r1:
+                    remaining_seeds.append((s1, r1))
+                new_seeds.append((r1 + shift, r2 + shift))
+                if r2 != s2:
+                    remaining_seeds.append((r2, s2))
                 continue
             # One of these cases should always be true
             raise Exception(f"AABB logic is incorrect for seeds: {s1, s2}, rule: {r1, r2}")

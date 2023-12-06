@@ -3,7 +3,7 @@ from itertools import groupby
 
 # https://www.reddit.com/r/adventofcode/s/lFc3UljtHJ
 
-file = open("test1.txt")
+file = open("input.txt")
 lines = file.read().splitlines()
 file.close()
 
@@ -49,10 +49,10 @@ for map in maps:
             if s1 <= r1 <= r2 <= s2:
                 # All the rule fits inside the seed
                 if s1 != r1:
-                    seeds_next_rule.append((s1, r1))
+                    seeds_next_rule.append((s1, r1 - 1))
                 seeds_next_map.append((r1 + shift, r2 + shift))
                 if r2 != s2:
-                    seeds_next_rule.append((r2, s2))
+                    seeds_next_rule.append((r2 + 1, s2))
                 continue
             # One of these cases should always be true
             raise Exception(f"AABB logic is incorrect for seeds: {s1, s2}, rule: {r1, r2}")

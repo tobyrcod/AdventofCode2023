@@ -11,6 +11,8 @@ rounds = (line.split(' ') for line in lines)
 rounds = ((r[0], int(r[1])) for r in rounds)
 
 def get_type_from_matching_counts(matching_counts, joker_count=0):
+    # This method works because it is never beneficial to turn multiple jokers into different things
+
     def get_lowest_number_of_jokers_needed(target, jokers, mc=matching_counts):
         # If we can use i jokers to reach the target t matching, return i
         # If no amount of jokers will get us there, return -1
@@ -40,12 +42,17 @@ def get_type_from_matching_counts(matching_counts, joker_count=0):
         We can't have any jokers remaining
         (if we did, we could trivially make a 4 of a kind)
         """
+        # Remove the set of cards we made a Three of a Kind (or was already)
         new_matching_counts = {key: val for (key, val) in matching_counts.items()}
         new_matching_counts[3-n] -= 1
         if new_matching_counts[3-n] == 0:
             del new_matching_counts[3-n]
+
+        # Do we have a pair anywhere alongside the set of 3?
         if 2 in new_matching_counts:
+            # Full House
             return 4
+        # Three of a Kind
         return 3
     """
     At this stage, we know joker count is 0 or 1 

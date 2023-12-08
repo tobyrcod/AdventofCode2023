@@ -22,6 +22,12 @@ def part1(start_node='AAA', end_pattern=r'\bZZZ\b'):
     return step
 
 def part2():
+    """
+    Assumptions:
+    For the LCM method to work, the steps from the first XXA to XXZ nodes
+    must be the same as the number of steps from XXZ to XXZ.
+    I was hesitant about this approach because of this, but it seems to be intended
+    """
     start_pattern = re.compile(r'\b\w{2}A\b')
     start_nodes = filter(start_pattern.match, network)
     cycles = map(lambda node: part1(start_node=node, end_pattern=r'\b\w{2}Z\b'), start_nodes)

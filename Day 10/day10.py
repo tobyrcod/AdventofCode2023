@@ -6,7 +6,7 @@ lines = file.read().splitlines()
 file.close()
 
 lines = np.array([np.array(list(line)) for line in lines])
-width, height = lines.shape
+height, width = lines.shape
 
 
 def is_valid_coord(y, x):

@@ -7,15 +7,16 @@ file.close()
 SYMBOL_SPACE = '.'
 SYMBOL_GALAXY = '#'
 
+EXPANSION_SCALE = 1_000_000
+
 universe = np.array([list(line) for line in lines], dtype=object)
 observed_shape = universe.shape
 
 # Expand the universe
+axis_expansion = list()
 for axis in range(len(observed_shape)):
-    empty = (np.where(np.all(universe == SYMBOL_SPACE, axis=axis)))[0]
-    repeats = np.ones(observed_shape[axis], dtype=int)
-    repeats[empty] += 1
-    universe = np.repeat(universe, repeats=repeats, axis=1-axis)
+    empty = set((np.where(np.all(universe == SYMBOL_SPACE, axis=axis)))[0])
+    axis_expansion.append(empty)
 
 # Get the galaxies
 galaxies = np.argwhere(universe == SYMBOL_GALAXY)
@@ -24,9 +25,20 @@ galaxies = np.argwhere(universe == SYMBOL_GALAXY)
 def galaxy_distance(g1, g2):
     # Valid as galaxies are allows to path through other galaxies,
     # so no collisions/pathfinding is needed
-    x1, y1 = g1
-    x2, y2 = g2
-    return abs(x1 - x2) + abs(y1 - y2)
+    y1, x1 = g1
+    y2, x2 = g2
+
+    x1, x2 = sorted([x1, x2])
+    y1, y2 = sorted([y1, y2])
+
+    travelled_x = set(range(x1+1, x2+1))
+    travelled_y = set(range(y1+1, y2+1))
+
+    distances_x = [EXPANSION_SCALE if x in axis_expansion[0] else 1 for x in travelled_x]
+    distances_y = [EXPANSION_SCALE if y in axis_expansion[1] else 1 for y in travelled_y]
+
+    return sum(distances_x) + sum(distances_y)
+
 
 # Find the distances between every pair of galaxies
 total_distance = 0

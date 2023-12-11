@@ -18,7 +18,7 @@ for axis in range(len(observed_shape)):
     universe = np.repeat(universe, repeats=repeats, axis=1-axis)
 
 # Get the galaxies
-galaxies = np.argwhere(universe == '#')
+galaxies = np.argwhere(universe == SYMBOL_GALAXY)
 
 # Find the distance between galaxies
 def galaxy_distance(g1, g2):

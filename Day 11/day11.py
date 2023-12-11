@@ -1,5 +1,8 @@
 import numpy as np
 
+# AMAZING VISUALISATION, maybe try to implement method!
+# https://www.reddit.com/r/adventofcode/comments/18fp13u/2023_day_11_animated_visualization/
+
 file = open("input.txt")
 lines = file.read().splitlines()
 file.close()

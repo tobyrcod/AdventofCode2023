@@ -1,81 +1,60 @@
-from itertools import product
-from collections import Counter
+# Great help for part2, and introducing me to functools @cache:
+# https://advent-of-code.xavd.id/writeups/2023/day/12/
+from functools import cache
 
 SYMBOL_OPERATIONAL = '.'
 SYMBOL_DAMAGED = '#'
 SYMBOL_UNKNOWN = '?'
 
-SHOULD_UNFOLD = True
+UNFOLDS = 5
 
 file = open("input.txt")
 lines = file.read().splitlines()
 file.close()
 
-lines = [
-    (
-        filter(None, groups.split('.')),
-        pattern,
-    )
-    for groups, pattern in [line.split() for line in lines]]
+lines = [line.split() for line in lines]
 
-dict_group_codes = dict()
+if UNFOLDS > 0:
+    lines = [['?'.join([record] * UNFOLDS), ','.join([groups] * UNFOLDS)] for record, groups in lines]
 
-def cross_groups(a, b):
-    if not a:
-        return b
-    if not b:
-        return a
+condition_records = [(record, tuple(map(int, groups.split(',')))) for record, groups in lines]
 
-    counts = dict()
-    for (x, y) in product(a, b):
-        key = f'{x},{y}'
-        if x == '0':
-            key = y
-        elif y == '0':
-            key = x
+@cache
+def num_ways_to_make_pattern(record, groups):
+    if not record:
+        return len(groups) == 0
 
-        if key not in counts:
-            counts[key] = 0
-        counts[key] += a[x] * b[y]
-    return counts
+    first, remaining = record[0], record[1:]
 
-def resolve_group(group):
-    if not group:
-        return Counter({'0': 1})
+    if not groups:
+        return SYMBOL_DAMAGED not in set(record)
 
-    codes = dict_group_codes.get(group)
-    if codes:
-        return codes
+    group = groups[0]
 
-    unknowns = [i for i, symbol in enumerate(group) if symbol == SYMBOL_UNKNOWN]
-    if len(unknowns) == 0:
-        dict_group_codes[group] = Counter({str(len(group)): 1})
-        return dict_group_codes[group]
+    if first == SYMBOL_OPERATIONAL:
+        return num_ways_to_make_pattern(remaining, groups)
 
-    mid = unknowns[len(unknowns) // 2]
-    left = group[:mid]
-    right = group[mid+1:]
+    if first == SYMBOL_DAMAGED:
+        if len(record) < group:
+            return 0
+        if any(c == SYMBOL_OPERATIONAL for c in record[:group]):
+            return 0
+        if len(record) > group and record[group] == SYMBOL_DAMAGED:
+            return 0
 
-    damaged = resolve_group(left + SYMBOL_DAMAGED + right)
-    operational = cross_groups(resolve_group(left), resolve_group(right))
+        return num_ways_to_make_pattern(record[group + 1:], groups[1:])
 
-    dict_group_codes[group] = Counter(damaged)
-    if operational:
-        dict_group_codes[group] += operational
+    operational = num_ways_to_make_pattern(f'{SYMBOL_OPERATIONAL}{remaining}', groups)
+    damaged = num_ways_to_make_pattern(f'{SYMBOL_DAMAGED}{remaining}', groups)
+    return operational + damaged
 
-    return dict_group_codes[group]
 
 def solve():
-    ways = 0
-    for line in lines:
-        groups, pattern = line
-        dict_ways_to_make_pattern = None
-        for group in groups:
-            resolve_group(group)
-            dict_ways_to_make_pattern = cross_groups(dict_ways_to_make_pattern, dict_group_codes[group])
-        ways += dict_ways_to_make_pattern[pattern]
+    total_ways = 0
+    for record, groups in condition_records:
+        ways = num_ways_to_make_pattern(record, groups)
+        total_ways += ways
+    print(total_ways)
 
-    print(ways)
 
 solve()
-

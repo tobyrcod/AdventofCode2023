@@ -11,7 +11,11 @@ SOUTH = 'S'
 EAST = 'E'
 WEST = 'W'
 
+CYCLE = [NORTH, WEST, SOUTH, EAST]
+NUM_CYCLES = 1000000000
+
 height, width = len(lines), len(lines[0])
+print(f'height: {height}, width: {width}')
 
 rocks = set()
 stationary = set()
@@ -25,8 +29,8 @@ for y, row in enumerate(lines):
 direction_sort_key = {
     NORTH: lambda c: c[0],
     SOUTH: lambda c: -c[0],
-    EAST: lambda c: c[1],
-    WEST: lambda c: -c[1]
+    EAST: lambda c: -c[1],
+    WEST: lambda c: c[1]
 }
 
 direction_delta = {
@@ -62,6 +66,9 @@ def move_rocks(direction):
 def calc_rock_load(rock):
     return height - rock[0]
 
+def calc_load():
+    return sum(map(calc_rock_load, rocks))
+
 def visualise():
     grid = [[EMPTY for x in range(width)] for y in range(height)]
     for y in range(height):
@@ -75,7 +82,26 @@ def visualise():
     for row in grid:
         print(row)
 
-move_rocks(NORTH)
+def find_rocks_period():
+    past_rocks = list()
+    past_rocks.append(set(rocks))
+    for i in range(NUM_CYCLES):
+        for direction in CYCLE:
+            move_rocks(direction)
 
-load = sum(map(calc_rock_load, rocks))
-print(load)
+        if rocks in past_rocks:
+            offset = past_rocks.index(rocks)
+            print(f'repeats state {offset} after {i - offset + 1} iterations')
+            return offset, i - offset + 1
+
+        past_rocks.append(set(rocks))
+    return 0, -1
+
+def apply_cycles(num_cycles):
+    for i in range(num_cycles):
+        for direction in CYCLE:
+            move_rocks(direction)
+
+offset, period = find_rocks_period()
+apply_cycles((NUM_CYCLES - offset) % period if period != -1 else NUM_CYCLES)
+print(f'total load after {NUM_CYCLES} cycles: {calc_load()}')

@@ -110,11 +110,11 @@ class HashMap:
         self.boxes = [LinkedList() for _ in range(256)]
 
     def add(self, lens, focal_length: int):
-        key = self.hash(lens)
+        key = self.__hash(lens)
         self.boxes[key].add(lens, focal_length)
 
     def remove(self, lens):
-        key = self.hash(lens)
+        key = self.__hash(lens)
         self.boxes[key].remove(lens)
 
     def get_installation(self):
@@ -122,7 +122,7 @@ class HashMap:
 
     @staticmethod
     # Holiday ASCII String Helper - HASH
-    def hash(string: str):
+    def __hash(string: str):
         current_value = 0
         for c in string:
             current_value += ord(c)
@@ -138,7 +138,6 @@ hashmap = HashMap()
 for step in initialization_sequence:
     lens, focal_length = step
     printv(f'After "{lens} {focal_length}"')
-    printv(hashmap.hash(lens))
     if focal_length == '':
         hashmap.remove(lens)
     else:

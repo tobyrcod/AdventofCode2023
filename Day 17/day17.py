@@ -4,6 +4,7 @@ import numpy as np
 with open('input.txt', 'r') as file:
     lines = file.read().rsplit('\n')
 
+PART = 2
 MAP = np.array([list(map(int, list(row))) for row in lines], dtype=int)
 HEIGHT, WIDTH = MAP.shape
 
@@ -26,7 +27,7 @@ def is_valid_position(position: tuple[int, int]):
 def add_vector2(a: tuple[int, int], b: tuple[int, int]):
     return a[0] + b[0], a[1] + b[1]
 
-def find_min_path(end_pos: tuple[int, int]) -> int:
+def find_min_path(end_pos: tuple[int, int], max_direction, turn_minimum) -> int:
     start_pos = (0, 0)
 
     frontier = MinHeap()
@@ -45,9 +46,10 @@ def find_min_path(end_pos: tuple[int, int]) -> int:
         seen.add(state)
 
         candidates = []
-        candidates.append((add_vector2(position, new_direction := (direction[1], -direction[0])), new_direction, 1))
-        candidates.append((add_vector2(position, new_direction := (-direction[1], direction[0])), new_direction, 1))
-        if direction_count < 3:
+        if direction_count >= turn_minimum:
+            candidates.append((add_vector2(position, new_direction := (direction[1], -direction[0])), new_direction, 1))
+            candidates.append((add_vector2(position, new_direction := (-direction[1], direction[0])), new_direction, 1))
+        if direction_count < max_direction:
             candidates.append((add_vector2(position, direction), direction, direction_count + 1))
 
         for new_position, new_bearing, new_bearing_count in candidates:
@@ -59,7 +61,9 @@ def find_min_path(end_pos: tuple[int, int]) -> int:
 
     return -1
 
-path = find_min_path((HEIGHT - 1, WIDTH - 1))
+max_directions = [3, 10]
+turn_minimums = [0, 4]
+path = find_min_path(end_pos=(HEIGHT - 1, WIDTH - 1), max_direction=max_directions[PART-1], turn_minimum=turn_minimums[PART-1])
 print(path)
 
 

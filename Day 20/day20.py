@@ -1,6 +1,8 @@
 from queue import Queue
 from typing import List
 
+import numpy as np
+
 with open('input.txt', 'r') as file:
     lines = file.read().rsplit('\n')
 module_names, module_connections = zip(*(line.split(' -> ') for line in lines))
@@ -21,7 +23,7 @@ class Module:
         self.name: str = name
         self.connection_names = []
 
-    def receive_pulse(self, from_name: str, pulse: bool) -> List[tuple[str, str, int]]:
+    def receive_pulse(self, from_name: str, pulse: bool, press_count: int) -> List[tuple[str, str, int]]:
         printv(f'{from_name} -{pulse}-> {self.name}')
         return []
 
@@ -39,8 +41,8 @@ class Module:
         return self.__str__()
 
 class Broadcaster(Module):
-    def receive_pulse(self, from_name: str, pulse: bool) -> List[tuple[str, str, int]]:
-        super().receive_pulse(from_name, pulse)
+    def receive_pulse(self, from_name: str, pulse: bool, press_count: int) -> List[tuple[str, str, int]]:
+        super().receive_pulse(from_name, pulse, press_count)
 
         return [(self.name, connection_name, pulse)
                 for connection_name in self.connection_names]
@@ -50,8 +52,8 @@ class FlipFlop(Module):
         super().__init__(name)
         self.state = False
 
-    def receive_pulse(self, from_name: str, pulse: bool) -> List[tuple[str, str, int]]:
-        super().receive_pulse(from_name, pulse)
+    def receive_pulse(self, from_name: str, pulse: bool, press_count: int) -> List[tuple[str, str, int]]:
+        super().receive_pulse(from_name, pulse, press_count)
 
         # If Flip-Flop receives a high pulse, it is ignored
         if pulse:
@@ -76,21 +78,26 @@ class Conjunction(Module):
         super().__init__(name)
         self.memory = dict()
 
-    def receive_pulse(self, from_name: str, pulse: bool) -> List[tuple[str, str, int]]:
-        super().receive_pulse(from_name, pulse)
+    def receive_pulse(self, from_name: str, pulse: bool, press_count: int) -> List[tuple[str, str, int]]:
+        super().receive_pulse(from_name, pulse, press_count)
+
+        if self.name == 'kj' and from_name == 'vn' and pulse:
+            print(f'kj hit with high pulse from vn after {press_count} presses')
 
         # Remember the pulse received
         self.memory[from_name] = pulse
 
-        # If we remember high pulses for all inputs, send a low pulse, else send a high pulse
-        pulse_to_send = not all(self.memory.values())
-
-        return [(self.name, connection_name, pulse_to_send)
+        return [(self.name, connection_name, self.pulse_to_send)
                 for connection_name in self.connection_names]
 
     @property
     def in_default_state(self) -> bool:
         return not any(self.memory.values())
+
+    @property
+    def pulse_to_send(self) -> int:
+        # If we remember high pulses for all inputs, send a low pulse, else send a high pulse
+        return not all(self.memory.values())
 
     def notify_connection_from(self, name):
         self.memory[name] = False
@@ -126,52 +133,31 @@ for i, module_name in enumerate(dict(modules)):
     modules[module_name].connection_names = module_connection_names
 
 # Push the button
-def push_the_button() -> tuple[int, int]:
-    low_pulse_count = 0
-    high_pulse_count = 0
-
+def push_the_button(press_count):
     pulses = Queue()
     pulses.put((BUTTON_NAME, BROADCASTER_NAME, False))
     while not pulses.empty():
         (from_name, to_name, pulse_type) = pulses.get()
 
-        high_pulse_count += pulse_type
-        low_pulse_count += not pulse_type
-
-        new_pulses = modules[to_name].receive_pulse(from_name, pulse_type)
+        new_pulses = modules[to_name].receive_pulse(from_name, pulse_type, press_count)
         for new_pulse in new_pulses:
             pulses.put(new_pulse)
 
-    return low_pulse_count, high_pulse_count
+def push_the_button_n_times(n: int):
+    for _ in range(1, n+1):
+        push_the_button(_)
 
-def push_the_button_n_times(n: int, stop_on_cycle: bool=False) -> tuple[int, int]:
-    low_pulse_count = 0
-    high_pulse_count = 0
-
-    for _ in range(n):
-        lph, hpc = push_the_button()
-        low_pulse_count += lph
-        high_pulse_count += hpc
-
-    return low_pulse_count, high_pulse_count
-
-def find_pulse_cycle() -> tuple[int, int, int]:
-    period = None
-    low_pulse_count = 0
-    high_pulse_count = 0
-
-    button_presses = 0
-    while not period:
-        button_presses += 1
-        print(button_presses)
-        lpc, hpc = push_the_button()
-        low_pulse_count += lpc
-        high_pulse_count += hpc
-
-        if all((module.in_default_state for module in modules.values())):
-            period = button_presses
-
-    return period, low_pulse_count, high_pulse_count
-
-low_pulse_count, high_pulse_count = push_the_button_n_times(1000)
-print(low_pulse_count * high_pulse_count)
+# How many button pressed until rx receives low pulse?
+# Only appearance of rx in configuration: &kj -> rx
+# So rx will receive a low pulse when all of kj memories are high
+# print(modules['kj']) => {'ln': False, 'dr': False, 'zx': False, 'vn': False}
+# So we need &ln, &dr, &zx, &vn to be high at the same time
+# print(modules['ln'], modules['dr'], modules['zx'], modules['vn'])
+# (Or we need jv, qs, jm, pr to be low at the same time)
+# Explore one by one to try and find cycles in them:
+# kj hit with high pulse from ln after 4003 presses
+# kj hit with high pulse from dr after 3863 presses
+# kj hit with high pulse from zx after 3989 presses
+# kj hit with high pulse from vn after 3943 presses
+# Finally, assuming constant periods for each, find lcm:
+print(np.lcm.reduce([4003, 3863, 3989, 3943]))

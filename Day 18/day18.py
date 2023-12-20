@@ -43,11 +43,12 @@ class Vector2:
         return self.__str__()
 
 class Curve:
-    def __init__(self, points: List[Vector2]=None):
+    def __init__(self, points: List[Vector2] = None, closed: bool = True):
         if points is None:
             points = []
 
         self.points = points
+        self.closed = closed
 
     def add_point(self, point: Vector2):
         if not isinstance(point, Vector2):
@@ -57,7 +58,7 @@ class Curve:
     def calc_perimeter(self):
         perimeter = 0
         length = len(self.points)
-        for i in range(1, len(self.points) + 1):
+        for i in range(1, length + 1 if self.closed else length):
             perimeter += (self.points[i % length] - self.points[i - 1]).magnitude()
         return perimeter
 

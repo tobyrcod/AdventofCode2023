@@ -37,7 +37,7 @@ for new_id, shape in enumerate(shapes):
         top_ids[top].add(id)
         if top > max_top:
             max_top = top
-    top_shapes = top_ids.get(max_top, [])
+    top_shapes = top_ids.get(max_top, set())
 
     # Move this shape's bottom to the top of these shapes
     id_top[new_id] = max_top + 1 + Z[1] - Z[0]
@@ -46,9 +46,38 @@ for new_id, shape in enumerate(shapes):
             pos_id[(x, y)] = new_id
     id_resting_on[new_id] = top_shapes
 
-safe_to_disintegrate = set(id_resting_on.keys())
-for resting_on in id_resting_on.values():
-    if len(resting_on) == 1:
-        safe_to_disintegrate.difference_update(resting_on)
 
-print(len(safe_to_disintegrate))
+id_would_fall_if_removed = dict()
+for id in id_top:
+    id_would_fall_if_removed[id] = set()
+    fallen = {id}
+    for other_id, resting_on in id_resting_on.items():
+        if id == other_id:
+            continue
+        if len(resting_on) == 0:
+            continue
+        if len(resting_on - fallen) == 0:
+            id_would_fall_if_removed[id].add(other_id)
+
+safe_to_disintegrate = [id for id, would_fall in id_would_fall_if_removed.items() if len(would_fall) == 0]
+print(f'Q: How many bricks are safe to disintegrate? A: {len(safe_to_disintegrate)}')
+print('-----')
+
+unsafe_to_disintegrate = [id for id, would_fall in id_would_fall_if_removed.items() if len(would_fall) != 0]
+
+def count_would_fall_if_removed_name(name):
+    fallen = {name}
+    falling = True
+    while falling:
+        falling = False
+        for other_id, resting_on in id_resting_on.items():
+            if other_id in fallen:
+                continue
+            if len(resting_on) == 0:
+                continue
+            if len(resting_on - fallen) == 0:
+                fallen.add(other_id)
+                falling = True
+    return len(fallen) - 1
+
+print(f'Q: How many would fall if we removed any bricks? A: {sum(map(count_would_fall_if_removed_name, unsafe_to_disintegrate))}')

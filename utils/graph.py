@@ -58,6 +58,18 @@ class Grid:
     def __getitem__(self, coord: Vector2):
         return self.array[coord.as_index]
 
+    @property
+    def size(self):
+        return Vector2(self.width, self.height)
+
+    @property
+    def top_left(self):
+        return Vector2(0, 0)
+
+    @property
+    def bottom_right(self):
+        return self.size - Vector2(1, 1)
+
     def find_all(self, item) -> List[Vector2]:
         return [Vector2(x, y) for y, x in np.argwhere(self.array == item)]
 

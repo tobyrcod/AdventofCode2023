@@ -51,9 +51,9 @@ class Grid:
     _cardinal_directions = {Vector2(0, 1), Vector2(1, 0), Vector2(-1, 0), Vector2(0, -1)}
     _diagonal_directions = {Vector2(1, 1), Vector2(-1, 1), Vector2(-1, -1), Vector2(1, -1)}
 
-    def __init__(self, array: np.array):
-        self.array = array
-        self.height, self.width = array.shape
+    def __init__(self, array):
+        self.array = np.array(array)
+        self.height, self.width = self.array.shape
 
     def __getitem__(self, coord: Vector2):
         return self.array[coord.as_index]
@@ -84,7 +84,8 @@ class Grid:
                           include_self: bool = False,
                           include_cardinals: bool = True,
                           include_diagonals: bool = False,
-                          include_invalid: bool = False):
+                          include_invalid: bool = False,
+                          exclude_values: set[str] = None) -> set[Vector2]:
         directions = set()
         if include_cardinals:
             directions |= Grid._cardinal_directions
@@ -92,9 +93,15 @@ class Grid:
             directions |= Grid._diagonal_directions
         if include_self:
             directions |= {Vector2(0, 0)}
+        candidates = {coord + direction for direction in directions}
 
-        return {coord + direction for direction in directions
-                if include_invalid | self.is_valid_position(coord + direction)}
+        if include_invalid:
+            return candidates
+        if not exclude_values:
+            exclude_values = set()
+        return {candidate for candidate in candidates
+                if self.is_valid_position(candidate) and
+                self[candidate] not in exclude_values}
 
 
 class Polygon:

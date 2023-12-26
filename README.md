@@ -1,5 +1,5 @@
 # AdventofCode2023
-Solutions for the Advent of Code 2023 coding puzzles!
+Solutions for the [Advent of Code 2023](https://adventofcode.com/2023) coding puzzles!
 
 ## Strap yourselves in for a breakneck speed run-through of my favourite days and what I learned from them!
 
